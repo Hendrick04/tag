@@ -78,7 +78,7 @@ td{padding:8px 10px;border-bottom:1px solid #f3f4f6}tr:hover td{background:#f9fa
     <select id="rcat" onchange="render()" style="flex:none;width:160px">
       <option value="">Toutes catégories</option>
       <option>Alimentation</option><option>Boisson</option><option>Hygiène</option>
-      <option>Électronique</option><option>Vêtements</option><option>Autre</option>
+      <option>Electromenager</option><option>Ustensiles de cuisine</option><option>Autre</option>
     </select>
   </div>
   <div style="overflow-x:auto">
@@ -517,7 +517,7 @@ function reset() {
   ["f_nom","f_qte","f_seuil","f_pa","f_pv","f_four"].forEach(id =>
     document.getElementById(id).value = ""
   );
-  document.getElementById("f_cat").value   = "Alimentation";
+  document.getElementById("f_cat").value   = "Ustensiles de cuisine";
   document.getElementById("fTitle").textContent = "➕ Ajouter un article";
 }
 
