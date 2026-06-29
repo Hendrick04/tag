@@ -301,7 +301,15 @@ function _buildPayload(sheet) {
   }
 
   if (sheet === "depenses") return DB.depenses;
-  if (sheet === "retours")  return DB.retours;
+  if (sheet === "retours") return DB.retours.map(function(r) {
+    return {
+      id: r.id, date: r.date, type: r.type,
+      articleId: r.articleId || "", nomArticle: r.article || r.nomArticle || "",
+      tiers: r.tiers || "", quantite: r.quantite || 1,
+      montant: r.montant || 0, motif: r.motif || "",
+      action: r.action || "", statut: r.statut || "attente",
+    };
+  });
   return [];
 }
 
@@ -407,7 +415,7 @@ function _applyRows(sh, rows) {
         o.prixVente = parseFloat(r.prixVente) || 0;
       }
       if (sh === "depenses") o.montant  = parseFloat(r.montant)  || 0;
-      if (sh === "retours")  { o.montant = parseFloat(r.montant)||0; o.quantite = parseFloat(r.quantite)||1; }
+      if (sh === "retours")  { o.montant = parseFloat(r.montant)||0; o.quantite = parseFloat(r.quantite)||1; o.article = r.nomArticle || r.article || ""; }
       return o;
     });
   }
