@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Ventes — Gestion Boutique</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',system-ui,sans-serif}
+body{background:#f8f9fa;color:#1a1a1a;padding:16px;padding-bottom:44px}
+nav{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+nav a{font-size:12px;color:#2563eb;text-decoration:none;padding:4px 10px;background:#eff6ff;border-radius:6px;border:1px solid #bfdbfe}
+h1{font-size:20px;font-weight:600;margin-bottom:12px}
+.card{background:#fff;border-radius:12px;border:1px solid #e5e7eb;padding:16px;margin-bottom:14px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:14px}
+.stat{background:#fff;border-radius:10px;border:1px solid #e5e7eb;padding:12px;text-align:center}
+.sv{font-size:20px;font-weight:700;color:#059669}.sl{font-size:11px;color:#6b7280;margin-top:2px}
+.fg{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+label{font-size:12px;color:#6b7280;font-weight:500;display:block;margin-bottom:3px}
+input,select{width:100%;padding:7px 10px;border:1px solid #d1d5db;border-radius:8px;font-size:13px;outline:none}
+input:focus,select:focus{border-color:#059669;box-shadow:0 0 0 3px rgba(5,150,105,.1)}
+.btn{padding:7px 14px;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer}
+.bv{background:#059669;color:#fff}.bg{background:#f3f4f6;color:#374151}
+.bsm{padding:4px 10px;font-size:12px}.br{background:#ef4444;color:#fff}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{padding:8px 10px;background:#f3f4f6;color:#374151;font-weight:600;text-align:left;font-size:12px}
+td{padding:8px 10px;border-bottom:1px solid #f3f4f6}tr:hover td{background:#f9fafb}
+.bk{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500}
+.pe{background:#d1fae5;color:#065f46}.pm{background:#dbeafe;color:#1e40af}.pc{background:#fef3c7;color:#92400e}
+.panier{background:#eff6ff;border-radius:10px;border:1px solid #bfdbfe;padding:12px;margin-top:10px}
+.pi{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:13px;border-bottom:1px solid #dbeafe}
+.pi:last-child{border-bottom:none}
+</style>
+</head>
+<body>
+<nav>
+  <a href="index.html">🏠 Accueil</a><a href="stock.html">📦 Stock</a>
+  <a href="points.html">📊 Points</a><a href="retours.html">↩️ Retours</a><a href="analyse.html">📈 Analyse</a>
+</nav>
+<h1>💰 Enregistrement des Ventes</h1>
+<div class="stats">
+  <div class="stat"><div class="sv" id="s_vj">0</div><div class="sl">Ventes aujourd'hui</div></div>
+  <div class="stat"><div class="sv" id="s_caj">0</div><div class="sl">CA aujourd'hui (FCFA)</div></div>
+  <div class="stat"><div class="sv" id="s_vm">0</div><div class="sl">Ventes ce mois</div></div>
+  <div class="stat"><div class="sv" id="s_cam">0</div><div class="sl">CA du mois (FCFA)</div></div>
+</div>
+<div class="card">
+  <div style="font-size:14px;font-weight:600;margin-bottom:10px">🛒 Nouvelle vente</div>
+  <div class="fg">
+    <div><label>Article *</label><select id="art" onchange="majPrix()"><option value="">-- Choisir --</option></select></div>
+    <div><label>Quantité</label><input id="qte" type="number" min="1" value="1" oninput="calcL()"/></div>
+    <div><label>Prix unitaire (FCFA)</label><input id="pu" type="number" min="0" oninput="calcL()"/></div>
+    <div><label>Total ligne</label><input id="tl" type="number" readonly style="background:#f3f4f6"/></div>
+  </div>
+  <button class="btn bv" style="margin-top:10px" onclick="ajPanier()">+ Ajouter au panier</button>
+  <div id="panierZone" style="display:none">
+    <div class="panier" id="panierListe"></div>
+    <div class="fg" style="margin-top:10px">
+      <div><label>Client</label><input id="client" placeholder="Nom client"/></div>
+      <div><label>Paiement</label>
+        <select id="paie">
+          <option value="espece">Espèces</option><option value="mobile">Mobile Money</option>
+          <option value="credit">Crédit</option><option value="carte">Carte</option>
+        </select>
+      </div>
+      <div><label>Date</label><input id="dateV" type="date"/></div>
+      <div><label>Remise (FCFA)</label><input id="remise" type="number" min="0" value="0" oninput="majTot()"/></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:#f0fdf4;border-radius:8px;margin:10px 0">
+      <strong>Total à payer :</strong>
+      <strong id="totalP" style="font-size:18px;color:#059669">0 FCFA</strong>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn bv" onclick="valider()">✅ Valider la vente</button>
+      <button class="btn bg" onclick="vider()">🗑️ Vider</button>
+    </div>
+  </div>
+</div>
+<div class="card">
+  <div style="font-size:14px;font-weight:600;margin-bottom:10px">📋 Historique</div>
+  <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+    <input id="fd" type="date" style="width:150px" onchange="renderH()"/>
+    <input id="fc" placeholder="🔍 Client..." style="flex:1;min-width:100px" oninput="renderH()"/>
+    <select id="fp" onchange="renderH()" style="width:150px">
+      <option value="">Tous modes</option>
+      <option value="espece">Espèces</option><option value="mobile">Mobile Money</option><option value="credit">Crédit</option>
+    </select>
+  </div>
+  <div style="overflow-x:auto">
+    <table><thead><tr><th>Date</th><th>Articles</th><th>Client</th><th>Paiement</th><th>Total (FCFA)</th><th></th></tr></thead>
+    <tbody id="hTb"></tbody></table>
+    <div id="hEm" style="text-align:center;padding:24px;color:#9ca3af;font-size:13px;display:none">Aucune vente</div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+//  CONNEXION GOOGLE SHEETS — technique JSONP
+//  Les fetch() sont bloqués par CORS sur Apps Script.
+//  JSONP utilise <script src="..."> qui n'est jamais bloqué.
+// ═══════════════════════════════════════════════════════════════════
+
+const CONFIG = {
+  API_URL: "https://script.google.com/macros/s/AKfycbwhyqFYZLT0wpPO7RO3XhFC6R2DJC69Izr2B9o2peAUy-_fhzYjhmk6ybuK8jU7wujIrQ/exec",
+  DEBOUNCE_MS:   1500,
+  RETRY_DELAYS:  [2000, 5000, 12000],
+  POLL_INTERVAL: 60000,
+  JSONP_TIMEOUT: 15000,
+};
+
+// ── JSONP : envoie une requête via <script>, reçoit callback ──────
+let _cbCounter = 0;
+function jsonp(params) {
+  return new Promise((resolve, reject) => {
+    const cbName = "_gscb" + (++_cbCounter);
+    const timer  = setTimeout(() => {
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+      reject(new Error("Timeout Apps Script"));
+    }, CONFIG.JSONP_TIMEOUT);
+
+    window[cbName] = (data) => {
+      clearTimeout(timer);
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+      if (data && data.ok === false) reject(new Error(data.error || "Erreur API"));
+      else resolve(data);
+    };
+
+    params.callback = cbName;
+    const qs     = Object.entries(params).map(([k,v]) => encodeURIComponent(k) + "=" + encodeURIComponent(v)).join("&");
+    const script  = document.createElement("script");
+    script.src    = CONFIG.API_URL + "?" + qs;
+    script.onerror = () => {
+      clearTimeout(timer);
+      delete window[cbName];
+      reject(new Error("Erreur chargement script JSONP"));
+    };
+    document.head.appendChild(script);
+  });
+}
+
+// ── Lecture ───────────────────────────────────────────────────────
+function apiGet(sheet) {
+  return jsonp({ sheet: sheet, action: "getAll" }).then(r => r.data || []);
+}
+
+// ── Écriture (payload base64 pour rester dans les limites URL) ────
+function apiWrite(payload) {
+  const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+  return jsonp({ p: b64 });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  FILE D'ATTENTE — debounce + retry + offline
+// ═══════════════════════════════════════════════════════════════════
+
+const _queue = {
+  pending: {},
+  offline: [],
+
+  schedule(sheet) {
+    if (this.pending[sheet]) clearTimeout(this.pending[sheet]);
+    this.pending[sheet] = setTimeout(() => this._flush(sheet), CONFIG.DEBOUNCE_MS);
+    _ui.setSaving();
+  },
+
+  async _flush(sheet) {
+    delete this.pending[sheet];
+    const data = _buildPayload(sheet);
+    await this._send(sheet, data, 0);
+    if (!Object.keys(this.pending).length) _ui.setSynced();
+  },
+
+  async _send(sheet, data, attempt) {
+    try {
+      await apiWrite({ sheet: sheet, action: "syncAll", data: data });
+      this.offline = this.offline.filter(o => o.sheet !== sheet);
+    } catch (e) {
+      const delay = CONFIG.RETRY_DELAYS[attempt];
+      if (delay !== undefined) {
+        _ui.setMsg("#f59e0b", "🔄 Retry dans " + Math.round(delay/1000) + "s…");
+        setTimeout(() => this._send(sheet, data, attempt + 1), delay);
+      } else {
+        this.offline.push({ sheet: sheet, data: data });
+        _ui.setMsg("#ef4444", "⚠️ Hors-ligne — sync au retour réseau", false);
+      }
+    }
+  },
+
+  async flushOffline() {
+    const ops = this.offline.splice(0);
+    for (const op of ops) await this._send(op.sheet, op.data, 0);
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════════
+//  BARRE DE STATUT — discrète, en bas
+// ═══════════════════════════════════════════════════════════════════
+
+const _ui = {
+  _el: null, _t: null,
+
+  _bar() {
+    if (!this._el) {
+      this._el = Object.assign(document.createElement("div"), {});
+      this._el.style.cssText = "position:fixed;bottom:0;left:0;right:0;padding:5px 14px;font-size:11px;font-family:system-ui,sans-serif;background:#1e293b;color:#cbd5e1;z-index:9999;opacity:0;transition:opacity .3s;display:flex;align-items:center;gap:7px;pointer-events:none";
+      this._dot = Object.assign(document.createElement("span"), {});
+      this._dot.style.cssText = "width:6px;height:6px;border-radius:50%;flex-shrink:0";
+      this._txt = document.createElement("span");
+      this._el.appendChild(this._dot);
+      this._el.appendChild(this._txt);
+      document.body.appendChild(this._el);
+    }
+    return this._el;
+  },
+
+  setMsg(color, text, autoHide) {
+    if (autoHide === undefined) autoHide = true;
+    const bar = this._bar();
+    clearTimeout(this._t);
+    this._dot.style.background = color;
+    this._txt.textContent = text;
+    bar.style.opacity = "1";
+    if (autoHide) this._t = setTimeout(() => { bar.style.opacity = "0"; }, 3500);
+  },
+
+  setSaving() { this.setMsg("#f59e0b", "⏳ Sauvegarde…",                                              false); },
+  setSynced() { this.setMsg("#22c55e", "✅ Sauvegardé — " + new Date().toLocaleTimeString("fr-FR"),   true);  },
+  setLoading(){ this.setMsg("#3b82f6", "⏳ Chargement depuis Google Sheets…",                         false); },
+  setLoaded() { this.setMsg("#22c55e", "✅ Synchronisé — " + new Date().toLocaleTimeString("fr-FR"),  true);  },
+};
+
+// ═══════════════════════════════════════════════════════════════════
+//  CONSTRUCTION DES DONNÉES PAR FEUILLE
+// ═══════════════════════════════════════════════════════════════════
+
+function _buildPayload(sheet) {
+  if (sheet === "stock") return DB.stock;
+
+  if (sheet === "ventes") {
+    var rows = [];
+    DB.ventes.forEach(function(v) {
+      (v.articles || []).forEach(function(a) {
+        var st = DB.stock.find(function(s){ return s.id == a.articleId; });
+        rows.push({
+          id: v.id, date: v.date,
+          articleId: a.articleId || "", nomArticle: a.nom,
+          categorie: st ? st.categorie : "",
+          client: v.client, quantite: a.quantite,
+          prixUnitaire: a.prix, sousTotal: a.prix * a.quantite,
+          remise: v.remise || 0, total: v.total,
+          modePaiement: v.paiement || "espece",
+        });
+      });
+    });
+    return rows;
+  }
+
+  if (sheet === "points") {
+    return Object.entries(DB.points).map(function(entry) {
+      var date = entry[0], p = entry[1];
+      var vj  = DB.ventes.filter(function(v){ return v.date === date; });
+      var ca  = vj.reduce(function(s,v){ return s+(v.total||0); }, 0);
+      var dep = (p.depenses||[]).reduce(function(s,d){ return s+(d.montant||0); }, 0);
+      return {
+        date: date, fondCaisse: p.fond||0, ca: ca, depenses: dep,
+        margeBrute: 0, resultatNet: ca-dep,
+        soldeCaisse: (p.fond||0)+ca-dep,
+        nbVentes: vj.length, notes: p.notes||"",
+      };
+    });
+  }
+
+  if (sheet === "depenses") return DB.depenses;
+  if (sheet === "retours")  return DB.retours;
+  return [];
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  DB LOCALE (localStorage)
+// ═══════════════════════════════════════════════════════════════════
+
+var DB_KEY = "gestion_boutique_v3";
+var DB = { stock: [], ventes: [], points: {}, depenses: [], retours: [] };
+
+function dbLoad() {
+  try {
+    var raw = localStorage.getItem(DB_KEY);
+    DB = (raw ? JSON.parse(raw) : null) || { stock: [], ventes: [], points: {}, depenses: [], retours: [] };
+  } catch(e) {
+    DB = { stock: [], ventes: [], points: {}, depenses: [], retours: [] };
+  }
+}
+
+function dbSave() {
+  localStorage.setItem(DB_KEY, JSON.stringify(DB));
+}
+
+function autoSave(sheet) {
+  dbSave();
+  _queue.schedule(sheet);
+}
+
+function autoSaveMulti() {
+  dbSave();
+  for (var i = 0; i < arguments.length; i++) _queue.schedule(arguments[i]);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  CHARGEMENT INITIAL DEPUIS SHEETS
+// ═══════════════════════════════════════════════════════════════════
+
+function loadFromSheets(list) {
+  list = list || ["stock","ventes","points","depenses","retours"];
+  _ui.setLoading();
+
+  var promise = Promise.resolve();
+  list.forEach(function(sh) {
+    promise = promise.then(function() {
+      return apiGet(sh).then(function(rows) {
+        _applyRows(sh, rows);
+      }).catch(function(e) {
+        // silencieux — on garde les données locales
+      });
+    });
+  });
+
+  return promise.then(function() {
+    // Réinjecter dépenses dans points
+    DB.depenses.forEach(function(d) {
+      if (d.date && DB.points[d.date]) {
+        if (!DB.points[d.date].depenses) DB.points[d.date].depenses = [];
+        if (!DB.points[d.date].depenses.find(function(x){ return x.id == d.id; }))
+          DB.points[d.date].depenses.push(d);
+      }
+    });
+    dbSave();
+    _ui.setLoaded();
+  });
+}
+
+function _applyRows(sh, rows) {
+  if (sh === "points") {
+    DB.points = {};
+    rows.forEach(function(r) {
+      if (!r.date) return;
+      DB.points[r.date] = { fond: parseFloat(r.fondCaisse)||0, depenses: [], notes: r.notes||"" };
+    });
+
+  } else if (sh === "ventes") {
+    var vm = {};
+    rows.forEach(function(r) {
+      var id = r.id; if (!id) return;
+      if (!vm[id]) vm[id] = {
+        id: id, date: r.date||"",
+        client: r.client||"Anonyme",
+        paiement: r.modePaiement||"espece",
+        remise: parseFloat(r.remise)||0,
+        total: parseFloat(r.total)||0,
+        articles: [],
+      };
+      if (r.articleId) vm[id].articles.push({
+        articleId: r.articleId, nom: r.nomArticle||"",
+        quantite: parseFloat(r.quantite)||1,
+        prix: parseFloat(r.prixUnitaire)||0,
+        total: parseFloat(r.sousTotal)||0,
+      });
+    });
+    DB.ventes = Object.values(vm);
+
+  } else {
+    DB[sh] = rows.map(function(r) {
+      var o = Object.assign({}, r);
+      if (sh === "stock") {
+        o.quantite  = parseFloat(r.quantite)  || 0;
+        o.seuil     = parseFloat(r.seuil)     || 5;
+        o.prixAchat = parseFloat(r.prixAchat) || 0;
+        o.prixVente = parseFloat(r.prixVente) || 0;
+      }
+      if (sh === "depenses") o.montant  = parseFloat(r.montant)  || 0;
+      if (sh === "retours")  { o.montant = parseFloat(r.montant)||0; o.quantite = parseFloat(r.quantite)||1; }
+      return o;
+    });
+  }
+}
+
+// ─── Polling auto ────────────────────────────────────────────────
+function startPolling(list) {
+  setInterval(function() {
+    if (Object.keys(_queue.pending).length) return;
+    loadFromSheets(list).then(function() {
+      document.dispatchEvent(new CustomEvent("sheetsUpdated"));
+    }).catch(function(){});
+  }, CONFIG.POLL_INTERVAL);
+}
+
+// ─── Retour réseau ───────────────────────────────────────────────
+window.addEventListener("online", function() {
+  _queue.flushOffline();
+  loadFromSheets().catch(function(){});
+});
+
+
+// ─── Utilitaires ────────────────────────────────────────────────
+function isApiConfigured() {
+  return CONFIG.API_URL && CONFIG.API_URL !== "VOTRE_URL_APPS_SCRIPT_ICI";
+}
+
+</script>
+<script>
+let panier = [];
+
+function peuplerArt() {
+  const sel = document.getElementById("art");
+  sel.innerHTML = '<option value="">-- Choisir un article --</option>';
+  DB.stock.forEach(a => {
+    const o = document.createElement("option");
+    o.value = a.id;
+    o.textContent = `${a.nom} (Stock: ${a.quantite || 0})`;
+    o.dataset.prix  = a.prixVente  || 0;
+    o.dataset.stock = a.quantite   || 0;
+    sel.appendChild(o);
+  });
+}
+
+function majPrix() {
+  const opt = document.getElementById("art").selectedOptions[0];
+  if (opt?.dataset.prix) { document.getElementById("pu").value = opt.dataset.prix; calcL(); }
+}
+
+function calcL() {
+  const p = parseFloat(document.getElementById("pu").value) || 0;
+  const q = parseInt(document.getElementById("qte").value)  || 0;
+  document.getElementById("tl").value = (p * q).toFixed(0);
+}
+
+function ajPanier() {
+  const sel = document.getElementById("art");
+  const opt = sel.selectedOptions[0];
+  if (!opt?.value) { alert("Sélectionnez un article"); return; }
+  const q   = parseInt(document.getElementById("qte").value)  || 0;
+  const p   = parseFloat(document.getElementById("pu").value) || 0;
+  const stk = parseInt(opt.dataset.stock) || 0;
+  if (q <= 0)   { alert("Quantité invalide"); return; }
+  if (q > stk)  { alert(`Stock insuffisant ! Disponible : ${stk}`); return; }
+  const ex = panier.find(x => x.articleId == opt.value);
+  if (ex) { ex.quantite += q; ex.total = ex.prix * ex.quantite; }
+  else panier.push({ articleId: opt.value, nom: opt.textContent.split("(")[0].trim(), quantite: q, prix: p, total: p * q });
+  renderP();
+}
+
+function renderP() {
+  const z = document.getElementById("panierZone");
+  const l = document.getElementById("panierListe");
+  if (!panier.length) { z.style.display = "none"; return; }
+  z.style.display = "block";
+  l.innerHTML = panier.map((p, i) => `
+    <div class="pi">
+      <span>${p.nom}</span>
+      <span style="display:flex;align-items:center;gap:8px">
+        <input type="number" value="${p.quantite}" min="1"
+          style="width:55px;padding:3px;border-radius:6px;border:1px solid #bfdbfe"
+          onchange="majQ(${i},this.value)">
+        × ${p.prix.toLocaleString("fr-FR")} = <strong>${p.total.toLocaleString("fr-FR")}</strong>
+        <button style="background:#fee2e2;color:#ef4444;border:none;border-radius:5px;padding:2px 6px;cursor:pointer"
+          onclick="retirer(${i})">✕</button>
+      </span>
+    </div>`).join("");
+  majTot();
+}
+
+function majQ(i, v) { panier[i].quantite = parseInt(v)||1; panier[i].total = panier[i].prix * panier[i].quantite; renderP(); }
+function retirer(i) { panier.splice(i, 1); renderP(); }
+function majTot() {
+  const s = panier.reduce((t, p) => t + p.total, 0);
+  const r = parseFloat(document.getElementById("remise").value) || 0;
+  document.getElementById("totalP").textContent = (s - r).toLocaleString("fr-FR") + " FCFA";
+}
+function vider() { if (confirm("Vider le panier ?")) { panier = []; renderP(); } }
+
+function valider() {
+  if (!panier.length) { alert("Panier vide"); return; }
+  const sous   = panier.reduce((s, p) => s + p.total, 0);
+  const remise = parseFloat(document.getElementById("remise").value) || 0;
+  const v = {
+    id:       Date.now(),
+    date:     document.getElementById("dateV").value || new Date().toISOString().split("T")[0],
+    client:   document.getElementById("client").value.trim() || "Anonyme",
+    paiement: document.getElementById("paie").value,
+    articles: [...panier],
+    remise,
+    total:    sous - remise,
+  };
+  DB.ventes.unshift(v);
+  // Décrémenter le stock
+  panier.forEach(p => {
+    const a = DB.stock.find(s => s.id == p.articleId);
+    if (a) a.quantite = Math.max(0, (a.quantite || 0) - p.quantite);
+  });
+  // ← Sauvegarde automatique des deux feuilles concernées
+  autoSaveMulti("ventes", "stock");
+  panier = [];
+  renderP();
+  document.getElementById("client").value = "";
+  document.getElementById("remise").value = 0;
+  renderH();
+  majStats();
+  peuplerArt();
+}
+
+function renderH() {
+  const d = document.getElementById("fd").value;
+  const c = document.getElementById("fc").value.toLowerCase();
+  const p = document.getElementById("fp").value;
+  const list = DB.ventes.filter(v =>
+    (!d || v.date === d) && (!c || v.client.toLowerCase().includes(c)) && (!p || v.paiement === p)
+  );
+  const tb = document.getElementById("hTb");
+  document.getElementById("hEm").style.display = list.length ? "none" : "block";
+  const lp = { espece:"Espèces", mobile:"Mobile Money", credit:"Crédit", carte:"Carte" };
+  const lc = { espece:"pe", mobile:"pm", credit:"pc", carte:"pm" };
+  tb.innerHTML = list.map(v => `<tr>
+    <td>${v.date}</td>
+    <td style="max-width:180px">${(v.articles||[]).map(a=>`${a.nom}×${a.quantite}`).join(", ")}</td>
+    <td>${v.client}</td>
+    <td><span class="bk ${lc[v.paiement]||"pe"}">${lp[v.paiement]||v.paiement}</span></td>
+    <td><strong>${(v.total||0).toLocaleString("fr-FR")}</strong></td>
+    <td><button class="btn br bsm" onclick="delV(${v.id})">🗑️</button></td>
+  </tr>`).join("");
+}
+
+function delV(id) {
+  if (!confirm("Supprimer cette vente ?")) return;
+  DB.ventes = DB.ventes.filter(v => v.id !== id);
+  autoSave("ventes"); // ← sauvegarde automatique
+  renderH();
+  majStats();
+}
+
+function majStats() {
+  const today = new Date().toISOString().split("T")[0];
+  const mois  = today.slice(0, 7);
+  const vj = DB.ventes.filter(v => v.date === today);
+  const vm = DB.ventes.filter(v => v.date.startsWith(mois));
+  document.getElementById("s_vj").textContent  = vj.length;
+  document.getElementById("s_caj").textContent = vj.reduce((s,v)=>s+(v.total||0),0).toLocaleString("fr-FR");
+  document.getElementById("s_vm").textContent  = vm.length;
+  document.getElementById("s_cam").textContent = vm.reduce((s,v)=>s+(v.total||0),0).toLocaleString("fr-FR");
+}
+
+document.addEventListener("sheetsUpdated", () => { peuplerArt(); renderH(); majStats(); });
+
+// Démarrage
+dbLoad();
+document.getElementById("dateV").value = new Date().toISOString().split("T")[0];
+document.getElementById("fd").value    = new Date().toISOString().split("T")[0];
+peuplerArt(); renderH(); majStats();
+loadFromSheets(["stock","ventes"]).then(() => { peuplerArt(); renderH(); majStats(); });
+startPolling(["stock","ventes"]);
+</script>
+</body>
+</html>

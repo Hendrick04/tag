@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Retours — Gestion Boutique</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',system-ui,sans-serif}
+body{background:#f8f9fa;color:#1a1a1a;padding:16px;padding-bottom:44px}
+nav{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+nav a{font-size:12px;color:#2563eb;text-decoration:none;padding:4px 10px;background:#eff6ff;border-radius:6px;border:1px solid #bfdbfe}
+h1{font-size:20px;font-weight:600;margin-bottom:12px}
+.card{background:#fff;border-radius:12px;border:1px solid #e5e7eb;padding:16px;margin-bottom:14px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:14px}
+.stat{background:#fff;border-radius:10px;border:1px solid #e5e7eb;padding:12px;text-align:center}
+.sv{font-size:22px;font-weight:700}.sl{font-size:11px;color:#6b7280;margin-top:2px}
+.tabs{display:flex;gap:4px;margin-bottom:14px;background:#f3f4f6;border-radius:10px;padding:4px}
+.tab{flex:1;padding:8px;text-align:center;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;background:transparent;color:#6b7280}
+.tab.active{background:#fff;color:#1a1a1a;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.fg{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+label{font-size:12px;color:#6b7280;font-weight:500;display:block;margin-bottom:3px}
+input,select{width:100%;padding:7px 10px;border:1px solid #d1d5db;border-radius:8px;font-size:13px;outline:none}
+input:focus,select:focus{border-color:#dc2626;box-shadow:0 0 0 3px rgba(220,38,38,.1)}
+.btn{padding:7px 14px;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer}
+.br{background:#dc2626;color:#fff}.bsm{padding:4px 10px;font-size:12px}
+.mbt{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0}
+.mb{display:inline-block;padding:4px 10px;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:20px;font-size:12px;cursor:pointer}
+.mb:hover,.mb.sel{background:#fee2e2;border-color:#fca5a5;color:#991b1b}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{padding:8px 10px;background:#f3f4f6;color:#374151;font-weight:600;text-align:left;font-size:12px}
+td{padding:8px 10px;border-bottom:1px solid #f3f4f6}tr:hover td{background:#f9fafb}
+.bk{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500}
+.bremb{background:#dbeafe;color:#1e40af}.bechg{background:#d1fae5;color:#065f46}.bavr{background:#fef3c7;color:#92400e}
+.psect{display:none}.psect.active{display:block}
+</style>
+</head>
+<body>
+<nav>
+  <a href="index.html">🏠 Accueil</a><a href="stock.html">📦 Stock</a>
+  <a href="ventes.html">💰 Ventes</a><a href="points.html">📊 Points</a><a href="analyse.html">📈 Analyse</a>
+</nav>
+<h1>↩️ Gestion des Retours</h1>
+<div class="stats">
+  <div class="stat"><div class="sv" id="st_t">0</div><div class="sl">Total retours</div></div>
+  <div class="stat"><div class="sv" id="st_a" style="color:#f59e0b">0</div><div class="sl">En attente</div></div>
+  <div class="stat"><div class="sv" id="st_c" style="color:#059669">0</div><div class="sl">Traités</div></div>
+  <div class="stat"><div class="sv" id="st_m" style="color:#ef4444;font-size:16px">0</div><div class="sl">Valeur (FCFA)</div></div>
+</div>
+<div class="tabs">
+  <button class="tab active" onclick="switchTab(0)">👤 Retours Clients</button>
+  <button class="tab" onclick="switchTab(1)">🏭 Retours Fournisseurs</button>
+</div>
+
+<!-- CLIENTS -->
+<div id="s0" class="psect active">
+  <div class="card">
+    <div style="font-size:14px;font-weight:600;margin-bottom:10px">📦 Nouveau retour client</div>
+    <div class="fg">
+      <div><label>Article *</label><select id="rc_art"><option value="">-- Choisir --</option></select></div>
+      <div><label>Client</label><input id="rc_cl" placeholder="Nom du client"/></div>
+      <div><label>Quantité</label><input id="rc_q" type="number" min="1" value="1"/></div>
+      <div><label>Montant (FCFA)</label><input id="rc_m" type="number" min="0"/></div>
+      <div><label>Date</label><input id="rc_d" type="date"/></div>
+      <div><label>Action</label>
+        <select id="rc_a"><option value="remb">Remboursement</option><option value="echg">Échange</option><option value="avr">Avoir</option></select>
+      </div>
+    </div>
+    <div style="margin-top:8px"><label>Motif</label>
+      <div class="mbt">
+        <span class="mb" onclick="selM(this,'rc_mot')">Produit défectueux</span>
+        <span class="mb" onclick="selM(this,'rc_mot')">Mauvaise taille</span>
+        <span class="mb" onclick="selM(this,'rc_mot')">Erreur commande</span>
+        <span class="mb" onclick="selM(this,'rc_mot')">Non conforme</span>
+        <span class="mb" onclick="selM(this,'rc_mot')">Périmé</span>
+      </div>
+      <input id="rc_mot" placeholder="Ou saisir un motif..."/>
+    </div>
+    <button class="btn br" style="margin-top:10px" onclick="ajRC()">Enregistrer</button>
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:600;margin-bottom:10px">📋 Retours clients</div>
+    <div style="overflow-x:auto">
+      <table><thead><tr><th>Date</th><th>Article</th><th>Client</th><th>Qté</th><th>Motif</th><th>Action</th><th>Montant</th><th>Statut</th><th></th></tr></thead>
+      <tbody id="tbRC"></tbody></table>
+      <div id="emRC" style="text-align:center;padding:24px;color:#9ca3af;font-size:13px;display:none">Aucun retour client</div>
+    </div>
+  </div>
+</div>
+
+<!-- FOURNISSEURS -->
+<div id="s1" class="psect">
+  <div class="card">
+    <div style="font-size:14px;font-weight:600;margin-bottom:10px">🏭 Nouveau retour fournisseur</div>
+    <div class="fg">
+      <div><label>Article *</label><select id="rf_art"><option value="">-- Choisir --</option></select></div>
+      <div><label>Fournisseur</label><input id="rf_fo" placeholder="Nom fournisseur"/></div>
+      <div><label>Quantité</label><input id="rf_q" type="number" min="1" value="1"/></div>
+      <div><label>Montant (FCFA)</label><input id="rf_m" type="number" min="0"/></div>
+      <div><label>Date</label><input id="rf_d" type="date"/></div>
+      <div><label>Type</label>
+        <select id="rf_t"><option value="remb">Remboursement</option><option value="echg">Remplacement</option><option value="avr">Avoir</option></select>
+      </div>
+    </div>
+    <div style="margin-top:8px"><label>Motif</label>
+      <div class="mbt">
+        <span class="mb" onclick="selM(this,'rf_mot')">Marchandise avariée</span>
+        <span class="mb" onclick="selM(this,'rf_mot')">Quantité incorrecte</span>
+        <span class="mb" onclick="selM(this,'rf_mot')">Mauvaise référence</span>
+        <span class="mb" onclick="selM(this,'rf_mot')">Périmé à réception</span>
+      </div>
+      <input id="rf_mot" placeholder="Ou saisir un motif..."/>
+    </div>
+    <button class="btn br" style="margin-top:10px" onclick="ajRF()">Enregistrer</button>
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:600;margin-bottom:10px">📋 Retours fournisseurs</div>
+    <div style="overflow-x:auto">
+      <table><thead><tr><th>Date</th><th>Article</th><th>Fourn.</th><th>Qté</th><th>Motif</th><th>Type</th><th>Montant</th><th>Statut</th><th></th></tr></thead>
+      <tbody id="tbRF"></tbody></table>
+      <div id="emRF" style="text-align:center;padding:24px;color:#9ca3af;font-size:13px;display:none">Aucun retour fournisseur</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+//  CONNEXION GOOGLE SHEETS — technique JSONP
+//  Les fetch() sont bloqués par CORS sur Apps Script.
+//  JSONP utilise <script src="..."> qui n'est jamais bloqué.
+// ═══════════════════════════════════════════════════════════════════
+
+const CONFIG = {
+  API_URL: "https://script.google.com/macros/s/AKfycbwhyqFYZLT0wpPO7RO3XhFC6R2DJC69Izr2B9o2peAUy-_fhzYjhmk6ybuK8jU7wujIrQ/exec",
+  DEBOUNCE_MS:   1500,
+  RETRY_DELAYS:  [2000, 5000, 12000],
+  POLL_INTERVAL: 60000,
+  JSONP_TIMEOUT: 15000,
+};
+
+// ── JSONP : envoie une requête via <script>, reçoit callback ──────
+let _cbCounter = 0;
+function jsonp(params) {
+  return new Promise((resolve, reject) => {
+    const cbName = "_gscb" + (++_cbCounter);
+    const timer  = setTimeout(() => {
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+      reject(new Error("Timeout Apps Script"));
+    }, CONFIG.JSONP_TIMEOUT);
+
+    window[cbName] = (data) => {
+      clearTimeout(timer);
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+      if (data && data.ok === false) reject(new Error(data.error || "Erreur API"));
+      else resolve(data);
+    };
+
+    params.callback = cbName;
+    const qs     = Object.entries(params).map(([k,v]) => encodeURIComponent(k) + "=" + encodeURIComponent(v)).join("&");
+    const script  = document.createElement("script");
+    script.src    = CONFIG.API_URL + "?" + qs;
+    script.onerror = () => {
+      clearTimeout(timer);
+      delete window[cbName];
+      reject(new Error("Erreur chargement script JSONP"));
+    };
+    document.head.appendChild(script);
+  });
+}
+
+// ── Lecture ───────────────────────────────────────────────────────
+function apiGet(sheet) {
+  return jsonp({ sheet: sheet, action: "getAll" }).then(r => r.data || []);
+}
+
+// ── Écriture (payload base64 pour rester dans les limites URL) ────
+function apiWrite(payload) {
+  const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+  return jsonp({ p: b64 });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  FILE D'ATTENTE — debounce + retry + offline
+// ═══════════════════════════════════════════════════════════════════
+
+const _queue = {
+  pending: {},
+  offline: [],
+
+  schedule(sheet) {
+    if (this.pending[sheet]) clearTimeout(this.pending[sheet]);
+    this.pending[sheet] = setTimeout(() => this._flush(sheet), CONFIG.DEBOUNCE_MS);
+    _ui.setSaving();
+  },
+
+  async _flush(sheet) {
+    delete this.pending[sheet];
+    const data = _buildPayload(sheet);
+    await this._send(sheet, data, 0);
+    if (!Object.keys(this.pending).length) _ui.setSynced();
+  },
+
+  async _send(sheet, data, attempt) {
+    try {
+      await apiWrite({ sheet: sheet, action: "syncAll", data: data });
+      this.offline = this.offline.filter(o => o.sheet !== sheet);
+    } catch (e) {
+      const delay = CONFIG.RETRY_DELAYS[attempt];
+      if (delay !== undefined) {
+        _ui.setMsg("#f59e0b", "🔄 Retry dans " + Math.round(delay/1000) + "s…");
+        setTimeout(() => this._send(sheet, data, attempt + 1), delay);
+      } else {
+        this.offline.push({ sheet: sheet, data: data });
+        _ui.setMsg("#ef4444", "⚠️ Hors-ligne — sync au retour réseau", false);
+      }
+    }
+  },
+
+  async flushOffline() {
+    const ops = this.offline.splice(0);
+    for (const op of ops) await this._send(op.sheet, op.data, 0);
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════════
+//  BARRE DE STATUT — discrète, en bas
+// ═══════════════════════════════════════════════════════════════════
+
+const _ui = {
+  _el: null, _t: null,
+
+  _bar() {
+    if (!this._el) {
+      this._el = Object.assign(document.createElement("div"), {});
+      this._el.style.cssText = "position:fixed;bottom:0;left:0;right:0;padding:5px 14px;font-size:11px;font-family:system-ui,sans-serif;background:#1e293b;color:#cbd5e1;z-index:9999;opacity:0;transition:opacity .3s;display:flex;align-items:center;gap:7px;pointer-events:none";
+      this._dot = Object.assign(document.createElement("span"), {});
+      this._dot.style.cssText = "width:6px;height:6px;border-radius:50%;flex-shrink:0";
+      this._txt = document.createElement("span");
+      this._el.appendChild(this._dot);
+      this._el.appendChild(this._txt);
+      document.body.appendChild(this._el);
+    }
+    return this._el;
+  },
+
+  setMsg(color, text, autoHide) {
+    if (autoHide === undefined) autoHide = true;
+    const bar = this._bar();
+    clearTimeout(this._t);
+    this._dot.style.background = color;
+    this._txt.textContent = text;
+    bar.style.opacity = "1";
+    if (autoHide) this._t = setTimeout(() => { bar.style.opacity = "0"; }, 3500);
+  },
+
+  setSaving() { this.setMsg("#f59e0b", "⏳ Sauvegarde…",                                              false); },
+  setSynced() { this.setMsg("#22c55e", "✅ Sauvegardé — " + new Date().toLocaleTimeString("fr-FR"),   true);  },
+  setLoading(){ this.setMsg("#3b82f6", "⏳ Chargement depuis Google Sheets…",                         false); },
+  setLoaded() { this.setMsg("#22c55e", "✅ Synchronisé — " + new Date().toLocaleTimeString("fr-FR"),  true);  },
+};
+
+// ═══════════════════════════════════════════════════════════════════
+//  CONSTRUCTION DES DONNÉES PAR FEUILLE
+// ═══════════════════════════════════════════════════════════════════
+
+function _buildPayload(sheet) {
+  if (sheet === "stock") return DB.stock;
+
+  if (sheet === "ventes") {
+    var rows = [];
+    DB.ventes.forEach(function(v) {
+      (v.articles || []).forEach(function(a) {
+        var st = DB.stock.find(function(s){ return s.id == a.articleId; });
+        rows.push({
+          id: v.id, date: v.date,
+          articleId: a.articleId || "", nomArticle: a.nom,
+          categorie: st ? st.categorie : "",
+          client: v.client, quantite: a.quantite,
+          prixUnitaire: a.prix, sousTotal: a.prix * a.quantite,
+          remise: v.remise || 0, total: v.total,
+          modePaiement: v.paiement || "espece",
+        });
+      });
+    });
+    return rows;
+  }
+
+  if (sheet === "points") {
+    return Object.entries(DB.points).map(function(entry) {
+      var date = entry[0], p = entry[1];
+      var vj  = DB.ventes.filter(function(v){ return v.date === date; });
+      var ca  = vj.reduce(function(s,v){ return s+(v.total||0); }, 0);
+      var dep = (p.depenses||[]).reduce(function(s,d){ return s+(d.montant||0); }, 0);
+      return {
+        date: date, fondCaisse: p.fond||0, ca: ca, depenses: dep,
+        margeBrute: 0, resultatNet: ca-dep,
+        soldeCaisse: (p.fond||0)+ca-dep,
+        nbVentes: vj.length, notes: p.notes||"",
+      };
+    });
+  }
+
+  if (sheet === "depenses") return DB.depenses;
+  if (sheet === "retours")  return DB.retours;
+  return [];
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  DB LOCALE (localStorage)
+// ═══════════════════════════════════════════════════════════════════
+
+var DB_KEY = "gestion_boutique_v3";
+var DB = { stock: [], ventes: [], points: {}, depenses: [], retours: [] };
+
+function dbLoad() {
+  try {
+    var raw = localStorage.getItem(DB_KEY);
+    DB = (raw ? JSON.parse(raw) : null) || { stock: [], ventes: [], points: {}, depenses: [], retours: [] };
+  } catch(e) {
+    DB = { stock: [], ventes: [], points: {}, depenses: [], retours: [] };
+  }
+}
+
+function dbSave() {
+  localStorage.setItem(DB_KEY, JSON.stringify(DB));
+}
+
+function autoSave(sheet) {
+  dbSave();
+  _queue.schedule(sheet);
+}
+
+function autoSaveMulti() {
+  dbSave();
+  for (var i = 0; i < arguments.length; i++) _queue.schedule(arguments[i]);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  CHARGEMENT INITIAL DEPUIS SHEETS
+// ═══════════════════════════════════════════════════════════════════
+
+function loadFromSheets(list) {
+  list = list || ["stock","ventes","points","depenses","retours"];
+  _ui.setLoading();
+
+  var promise = Promise.resolve();
+  list.forEach(function(sh) {
+    promise = promise.then(function() {
+      return apiGet(sh).then(function(rows) {
+        _applyRows(sh, rows);
+      }).catch(function(e) {
+        // silencieux — on garde les données locales
+      });
+    });
+  });
+
+  return promise.then(function() {
+    // Réinjecter dépenses dans points
+    DB.depenses.forEach(function(d) {
+      if (d.date && DB.points[d.date]) {
+        if (!DB.points[d.date].depenses) DB.points[d.date].depenses = [];
+        if (!DB.points[d.date].depenses.find(function(x){ return x.id == d.id; }))
+          DB.points[d.date].depenses.push(d);
+      }
+    });
+    dbSave();
+    _ui.setLoaded();
+  });
+}
+
+function _applyRows(sh, rows) {
+  if (sh === "points") {
+    DB.points = {};
+    rows.forEach(function(r) {
+      if (!r.date) return;
+      DB.points[r.date] = { fond: parseFloat(r.fondCaisse)||0, depenses: [], notes: r.notes||"" };
+    });
+
+  } else if (sh === "ventes") {
+    var vm = {};
+    rows.forEach(function(r) {
+      var id = r.id; if (!id) return;
+      if (!vm[id]) vm[id] = {
+        id: id, date: r.date||"",
+        client: r.client||"Anonyme",
+        paiement: r.modePaiement||"espece",
+        remise: parseFloat(r.remise)||0,
+        total: parseFloat(r.total)||0,
+        articles: [],
+      };
+      if (r.articleId) vm[id].articles.push({
+        articleId: r.articleId, nom: r.nomArticle||"",
+        quantite: parseFloat(r.quantite)||1,
+        prix: parseFloat(r.prixUnitaire)||0,
+        total: parseFloat(r.sousTotal)||0,
+      });
+    });
+    DB.ventes = Object.values(vm);
+
+  } else {
+    DB[sh] = rows.map(function(r) {
+      var o = Object.assign({}, r);
+      if (sh === "stock") {
+        o.quantite  = parseFloat(r.quantite)  || 0;
+        o.seuil     = parseFloat(r.seuil)     || 5;
+        o.prixAchat = parseFloat(r.prixAchat) || 0;
+        o.prixVente = parseFloat(r.prixVente) || 0;
+      }
+      if (sh === "depenses") o.montant  = parseFloat(r.montant)  || 0;
+      if (sh === "retours")  { o.montant = parseFloat(r.montant)||0; o.quantite = parseFloat(r.quantite)||1; }
+      return o;
+    });
+  }
+}
+
+// ─── Polling auto ────────────────────────────────────────────────
+function startPolling(list) {
+  setInterval(function() {
+    if (Object.keys(_queue.pending).length) return;
+    loadFromSheets(list).then(function() {
+      document.dispatchEvent(new CustomEvent("sheetsUpdated"));
+    }).catch(function(){});
+  }, CONFIG.POLL_INTERVAL);
+}
+
+// ─── Retour réseau ───────────────────────────────────────────────
+window.addEventListener("online", function() {
+  _queue.flushOffline();
+  loadFromSheets().catch(function(){});
+});
+
+
+// ─── Utilitaires ────────────────────────────────────────────────
+function isApiConfigured() {
+  return CONFIG.API_URL && CONFIG.API_URL !== "VOTRE_URL_APPS_SCRIPT_ICI";
+}
+
+</script>
+<script>
+function peuplerArt() {
+  ["rc_art","rf_art"].forEach(id => {
+    const sel = document.getElementById(id);
+    sel.innerHTML = '<option value="">-- Choisir --</option>';
+    DB.stock.forEach(a => { const o = document.createElement("option"); o.value=a.id; o.textContent=a.nom; sel.appendChild(o); });
+  });
+}
+function selM(el, fid) { el.closest(".mbt").querySelectorAll(".mb").forEach(b=>b.classList.remove("sel")); el.classList.add("sel"); document.getElementById(fid).value=el.textContent; }
+function switchTab(n) { document.querySelectorAll(".tab").forEach((b,i)=>b.classList.toggle("active",i===n)); document.getElementById("s0").classList.toggle("active",n===0); document.getElementById("s1").classList.toggle("active",n===1); }
+
+function ajRC() {
+  const art = document.getElementById("rc_art"); if(!art.value){alert("Sélectionnez un article");return;}
+  const r = { id:Date.now(), date:document.getElementById("rc_d").value, type:"client",
+    articleId:art.value, article:art.options[art.selectedIndex].textContent,
+    tiers:document.getElementById("rc_cl").value.trim()||"Anonyme",
+    quantite:parseInt(document.getElementById("rc_q").value)||1,
+    montant:parseFloat(document.getElementById("rc_m").value)||0,
+    motif:document.getElementById("rc_mot").value||"Non précisé",
+    action:document.getElementById("rc_a").value, statut:"attente" };
+  DB.retours.unshift(r);
+  autoSave("retours"); // ← sauvegarde automatique
+  ["rc_cl","rc_m","rc_mot"].forEach(id=>document.getElementById(id).value="");
+  document.getElementById("rc_q").value=1;
+  afficher();
+}
+
+function ajRF() {
+  const art = document.getElementById("rf_art"); if(!art.value){alert("Sélectionnez un article");return;}
+  const r = { id:Date.now(), date:document.getElementById("rf_d").value, type:"fournisseur",
+    articleId:art.value, article:art.options[art.selectedIndex].textContent,
+    tiers:document.getElementById("rf_fo").value.trim()||"Fournisseur",
+    quantite:parseInt(document.getElementById("rf_q").value)||1,
+    montant:parseFloat(document.getElementById("rf_m").value)||0,
+    motif:document.getElementById("rf_mot").value||"Non précisé",
+    action:document.getElementById("rf_t").value, statut:"attente" };
+  DB.retours.unshift(r);
+  autoSave("retours"); // ← sauvegarde automatique
+  ["rf_fo","rf_m","rf_mot"].forEach(id=>document.getElementById(id).value="");
+  document.getElementById("rf_q").value=1;
+  afficher();
+}
+
+function changerStatut(id, val) {
+  const r = DB.retours.find(x=>x.id===id); if(r){ r.statut=val; }
+  autoSave("retours"); // ← sauvegarde automatique
+  afficher();
+}
+
+function suppR(id) {
+  if(!confirm("Supprimer ce retour ?")) return;
+  DB.retours = DB.retours.filter(r=>r.id!==id);
+  autoSave("retours"); // ← sauvegarde automatique
+  afficher();
+}
+
+function afficher() {
+  const all = DB.retours;
+  document.getElementById("st_t").textContent = all.length;
+  document.getElementById("st_a").textContent = all.filter(r=>r.statut==="attente").length;
+  document.getElementById("st_c").textContent = all.filter(r=>r.statut==="traite").length;
+  document.getElementById("st_m").textContent = all.reduce((s,r)=>s+(r.montant||0),0).toLocaleString("fr-FR");
+  const la = { remb:"Remboursement", echg:"Échange", avr:"Avoir" };
+  const makeRow = r => `<tr>
+    <td>${r.date}</td><td>${r.article}</td><td>${r.tiers}</td><td>${r.quantite}</td>
+    <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.motif}">${r.motif}</td>
+    <td><span class="bk b${r.action||"remb"}">${la[r.action]||r.action||""}</span></td>
+    <td><strong>${(r.montant||0).toLocaleString("fr-FR")}</strong></td>
+    <td><select style="font-size:11px;padding:2px;border-radius:5px;border:1px solid #d1d5db" onchange="changerStatut(${r.id},this.value)">
+      <option value="attente" ${r.statut==="attente"?"selected":""}>En attente</option>
+      <option value="encours" ${r.statut==="encours"?"selected":""}>En cours</option>
+      <option value="traite"  ${r.statut==="traite" ?"selected":""}>Traité</option>
+    </select></td>
+    <td><button class="btn br bsm" onclick="suppR(${r.id})">🗑️</button></td></tr>`;
+  const clients = all.filter(r=>r.type==="client");
+  const fourns  = all.filter(r=>r.type==="fournisseur");
+  document.getElementById("emRC").style.display = clients.length?"none":"block";
+  document.getElementById("emRF").style.display = fourns.length ?"none":"block";
+  document.getElementById("tbRC").innerHTML = clients.map(makeRow).join("");
+  document.getElementById("tbRF").innerHTML = fourns.map(makeRow).join("");
+}
+
+document.addEventListener("sheetsUpdated", () => { peuplerArt(); afficher(); });
+
+// Démarrage
+dbLoad();
+const today = new Date().toISOString().split("T")[0];
+document.getElementById("rc_d").value = today;
+document.getElementById("rf_d").value = today;
+peuplerArt(); afficher();
+loadFromSheets(["stock","retours"]).then(() => { peuplerArt(); afficher(); });
+startPolling(["stock","retours"]);
+</script>
+</body>
+</html>
